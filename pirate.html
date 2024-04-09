@@ -71,6 +71,12 @@ var LEFT = 37;
 var shipRow;
 var shipColumn;
 
+//The game variables
+var food = 10;
+var gold = 10;
+var experience = 0;
+var gameMessage = "Use the arrow keys to find your way home";
+
 for (var row = 0; row < ROWS; row++)
 {
     for (var column = 0; column < COLUMNS; column++)
@@ -86,7 +92,7 @@ for (var row = 0; row < ROWS; row++)
 render();
 
 function keydownHandler(event)
-{
+{   var moviment = shipColumn + shipRow;
     switch(event.keyCode)
     {
         case UP:
@@ -122,9 +128,110 @@ function keydownHandler(event)
             }
         break;
     }
+
+    switch(map[shipRow][shipColumn])
+    {
+        case WATER:
+            gameMessage = "You sail the open seas.";
+            break;
+        case PIRATE:
+            fight();
+            break;
+        case ISLAND:
+            trade();
+            break;
+        case HOME:
+            endGame();
+            break;
+    }
+
+    //Substract some food each turn
+    if (moviment != shipColumn + shipRow) food--;
+
+    //Find out if the ship is out of food or gold
+    if(food<=0 || gold <=0)
+    {
+        endGame();
+    }
     render();
 }
 
+function trade(){
+    var islandsFood = experience + gold;
+    var cost = Math.ceil(Math.random() * islandsFood);
+
+    if(gold > cost){
+        food += islandsFood;
+        gold -= cost;
+        experience += 2;
+
+        gameMessage = "You buy " + islandsFood + " coconuts" +
+                      " for " + cost + " gold pieces.";
+    }
+    else
+    {
+        //Tell the player f they don't have enough gold
+        experience++;
+        gameMessage = "You don't have enough gold to buy food";
+    }
+}
+
+function fight(){
+    var shipStrength = Math.ceil((food + gold) /2);
+
+    var pirateStrength = Math.ceil(Math.random() * shipStrength * 2);
+
+    if (pirateStrength > shipStrength)
+    {   
+        //the pirates ramsack the ship
+        var stolenGold = Math.round(pirateStrength / 2);
+        gold -= stolenGold;
+
+        //Give the player some experience for trying
+        experience += 1;
+
+        gameMessage = "You fight and LOSE " + stolenGold + " gold pieces."
+                    + "Ship strength: " + shipStrength
+                    + " Pirate strength: " + pirateStrength;
+    }
+    else
+    {
+        var pirateGold = Math.round(pirateStrength / 2);
+        gold += pirateGold;
+
+        experience += 2;
+
+        gameMessage = "You fight and WIN " + pirateGold + " gold pieces."
+                    + "Ship strength: " + shipStrength
+                    + " Pirate strength: " + pirateStrength;
+
+    }
+}
+
+function endGame(){
+
+    if (map[shipRow][shipColumn]===HOME)
+    {
+        var score = food + gold + experience;
+
+        gameMessage = "You made it home ALIVE! Final Score: " + score;
+    }
+    else
+    {
+        if(gold <=0)
+        {
+            gameMessage += "You've run out of gold!"
+        }
+        else
+        {
+            gameMessage += "You've run out of food!"   
+        }
+
+        gameMessage += " Your crew throws you overboard!";
+    }
+
+    window.removeEventListener("keydown", keydownHandler, false);
+}
 
 function render(){
 
@@ -180,5 +287,8 @@ function render(){
             cell.style.left = column * SIZE + "px";
         }
     }
+    output.innerHTML = gameMessage;
+    output.innerHTML += "<br>Gold: " + gold + ", Food: "
+                        + food + ", Experience: " + experience;
 }
 </script>
