@@ -155,6 +155,10 @@ function keydownHandler(event)
 
     moveMonster();
 
+    if(gameObjects[shipRow][shipColumn] === MONSTER)
+    {
+        endGame();
+    }
     //Substract some food each turn
     if (moviment != shipColumn + shipRow) {
         food--;
@@ -177,6 +181,7 @@ function moveMonster()
     var validDirections = [];
 
     var direction = undefined;
+
     console.log(direction);
     if (monsterRow > 0)
     {
@@ -302,15 +307,19 @@ function endGame(){
 
         gameMessage = "You made it home ALIVE! Final Score: " + score;
     }
+    else if (gameObjects[shipRow][shipColumn] === MONSTER)
+    {
+        gameMessage = "Your ship has beeen swallowed by a sea monster!";
+    }
     else
     {
         if(gold <=0)
         {
-            gameMessage += "You've run out of gold!"
+            gameMessage += "You've run out of gold!";
         }
         else
         {
-            gameMessage += "You've run out of food!"   
+            gameMessage += "You've run out of food!";  
         }
 
         gameMessage += " Your crew throws you overboard!";
