@@ -44,7 +44,7 @@ var map =
 var gameObjects =
 [
     [0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0],
+    [0, 0, 5, 0, 0, 0],
     [0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0],
@@ -56,6 +56,7 @@ var ISLAND = 1;
 var PIRATE = 2;
 var HOME = 3;
 var SHIP = 4;
+var MONSTER = 5;
 //The size of each cell
 var SIZE = 64;
 //number of rows and columns
@@ -70,10 +71,12 @@ var LEFT = 37;
 //An automatic way of setting the ship's start position
 var shipRow;
 var shipColumn;
+var monsterRow;
+var monsterColumn;
 
 //The game variables
-var food = 10;
-var gold = 10;
+var food = 100;
+var gold = 100;
 var experience = 0;
 var gameMessage = "Use the arrow keys to find your way home";
 
@@ -85,6 +88,11 @@ for (var row = 0; row < ROWS; row++)
         {
             shipRow = row;
             shipColumn = column;
+        }
+        if(gameObjects[row][column] === MONSTER)
+        {
+            monsterRow = row;
+            monsterColumn = column;
         }
     }
 }
@@ -145,9 +153,12 @@ function keydownHandler(event)
             break;
     }
 
-    //Substract some food each turn
-    if (moviment != shipColumn + shipRow) food--;
+    moveMonster();
 
+    //Substract some food each turn
+    if (moviment != shipColumn + shipRow) {
+        food--;
+    }
     //Find out if the ship is out of food or gold
     if(food<=0 || gold <=0)
     {
@@ -156,6 +167,81 @@ function keydownHandler(event)
     render();
 }
 
+function moveMonster()
+{
+    var UP = 1;
+    var DOWN = 2;
+    var LEFT = 3;
+    var RIGHT = 4;
+
+    var validDirections = [];
+
+    var direction = undefined;
+    console.log(direction);
+    if (monsterRow > 0)
+    {
+        var thingAbove = map[monsterRow - 1][monsterColumn];
+        if (thingAbove === WATER)
+        {
+            validDirections.push(UP);
+        }
+    }
+    if (monsterRow < ROWS - 1)
+    {
+        var thingAbove = map[monsterRow + 1][monsterColumn];
+        if (thingAbove === WATER)
+        {
+            validDirections.push(DOWN);
+        }
+    }
+    if (monsterColumn > 0)
+    {
+        var thingAbove = map[monsterRow][monsterColumn - 1];
+        if (thingAbove === WATER)
+        {
+            validDirections.push(LEFT);
+        }
+    }
+    if (monsterColumn < COLUMNS - 1)
+    {
+        var thingAbove = map[monsterRow][monsterColumn + 1];
+        if (thingAbove === WATER)
+        {
+            validDirections.push(RIGHT);
+        }
+    }
+    if (validDirections.length !== 0)
+    {
+        var randomNumber = Math.floor(Math.random() * validDirections.length);
+        direction = validDirections[randomNumber];
+    }
+
+    console.log(direction);
+
+    switch(direction)
+    {
+        case UP:
+            gameObjects[monsterRow][monsterColumn] = 0;
+            monsterRow--;
+            gameObjects[monsterRow][monsterColumn] = MONSTER;
+        break;
+        case DOWN:
+            gameObjects[monsterRow][monsterColumn] = 0;
+            monsterRow++;
+            gameObjects[monsterRow][monsterColumn] = MONSTER;
+        break;
+        case LEFT:
+            gameObjects[monsterRow][monsterColumn] = 0;
+            monsterColumn--;
+            gameObjects[monsterRow][monsterColumn] = MONSTER;
+        break;
+        case RIGHT:
+            gameObjects[monsterRow][monsterColumn] = 0;
+            monsterColumn++;
+            gameObjects[monsterRow][monsterColumn] = MONSTER;
+        break;
+    }
+}
 function trade(){
     var islandsFood = experience + gold;
     var cost = Math.ceil(Math.random() * islandsFood);
@@ -279,6 +365,9 @@ function render(){
             {
                 case SHIP:
                     cell.src = "images/ship.png";
+                    break;
+                case MONSTER:
+                    cell.src = "images/monster.png";
                     break;
             }
 
