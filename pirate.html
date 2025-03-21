@@ -26,6 +26,168 @@ p
 <p id="output"></p>
 
 <script>
+//Get a reference to the stage and output
+var stage = document.querySelector("#stage");
+var output = document.querySelector("#output");
 
+//Add a keyboard listener
+window.addEventListener("keydown", keydownHandler, false);
+
+var map =
+[
+    [0, 2, 0, 0, 0, 3],
+    [0, 0, 0, 1, 0, 0],
+    [0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 2, 0],
+    [0, 2, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0]
+];
+//The game objects map
+var gameObjects =
+[
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [4, 0, 0, 0, 0, 0]
+];
+//Map code
+var WATER = 0;
+var ISLAND = 1;
+var PIRATE = 2;
+var HOME = 3;
+var SHIP = 4;
+//The size of each cell
+var SIZE = 64;
+//The arrow key codes
+var UP = 38;
+var DOWN = 40;
+var RIGHT = 39;
+var LEFT = 37;
+//The number of rows and columns
+var ROWS = map.length;
+var COLUMNS = map[0].length;
+//GPS pel vaixell
+var shipRow;
+var shipColumn;
+
+
+for (var row = 0; row < ROWS; row++) {
+    for (var column = 0; column < COLUMNS; column++) {
+        if(gameObjects[row][column] === SHIP) {
+            shipRow = row;
+            shipColumn = column;
+        }
+    }
+}
+render();
+
+function keydownHandler(event) {
+    switch(event.keyCode) {
+        case UP:
+            moveUp();
+            break;
+        case DOWN:
+            moveDown();
+            break;
+        case LEFT:
+            moveLeft();
+            break;
+        case RIGHT:
+            moveRight();
+            break;
+    }
+
+    switch(map[shipRow][shipColumn])
+    {
+        case WATER:
+            gameMessage = "You sail the open seas."
+            break;
+        case ISLAND:
+            //trade();
+            break;
+        case PIRATE:
+            //fight();
+            break;
+        case HOME:
+            //endGame();
+            break;
+    }
+
+    render();
+}
+function moveRight() {
+    if (shipColumn < COLUMNS - 1) {
+        gameObjects[shipRow][shipColumn] = 0;
+        shipColumn++;
+        gameObjects[shipRow][shipColumn] = 4;
+    }
+}
+function moveLeft() {
+    if(shipColumn > 0) {
+        gameObjects[shipRow][shipColumn] = 0;
+        shipColumn--;
+        gameObjects[shipRow][shipColumn] = 4;
+    }
+}
+function moveDown(){
+    if (shipRow < ROWS -1) {
+        gameObjects[shipRow][shipColumn] = 0;
+        shipRow++;
+        gameObjects[shipRow][shipColumn] = 4;
+    }
+}
+function moveUp() {
+    if(shipRow > 0) {
+        gameObjects[shipRow][shipColumn] = 0;
+        shipRow--;
+        gameObjects[shipRow][shipColumn] = 4;
+    }
+}
+function render(){
+    //Clear the stage of img tag cells from the previous turn
+    if (stage.hasChildNodes()) {
+        for (var i = 0; i < ROWS * COLUMNS; i++){
+            stage.removeChild(stage.firstChild);
+        }
+    }
+    for (var row = 0; row < ROWS; row++){
+        for (var column = 0; column < COLUMNS; column++){
+            //Create an img tag called cell
+            var cell = document.createElement("img");
+            //set its CSS class to cell
+            cell.setAttribute("class", "cell");
+            //Add the image tag to the <div id="stage"> tag
+            stage.appendChild(cell);
+            //Find the correct image for this
+            switch(map[row][column])
+            {
+                case WATER:
+                    cell.src = "images/water.png";
+                    break;
+                case ISLAND:
+                    cell.src = "images/island.png";
+                    break;
+                case PIRATE:
+                    cell.src = "images/pirate.png";
+                    break;
+                case HOME:
+                    cell.src = "images/home.png";
+                    break;
+            }
+            //Put the moving objects in the map
+            switch(gameObjects[row][column])
+            {
+                case SHIP:
+                    cell.src = "images/ship.png";
+                    break;
+            }
+            //Position the cell
+            cell.style.top = row * SIZE + "px";
+            cell.style.left = column * SIZE + "px";
+        }
+    }
+}
 
 </script>
