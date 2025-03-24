@@ -46,7 +46,7 @@ var map =
 var gameObjects =
 [
     [0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0],
+    [0, 0, 5, 0, 0, 0],
     [0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0],
@@ -58,6 +58,7 @@ var ISLAND = 1;
 var PIRATE = 2;
 var HOME = 3;
 var SHIP = 4;
+var MONSTER = 5;
 //The size of each cell
 var SIZE = 64;
 //The arrow key codes
@@ -71,13 +72,23 @@ var COLUMNS = map[0].length;
 //GPS pel vaixell
 var shipRow;
 var shipColumn;
-
+var monsterRow;
+var monsterColumn;
+//The game variables
+var food = 10;
+var gold = 10;
+var experience = 0;
+var gameMessage = "Use the arrow keys to find your way home";
 
 for (var row = 0; row < ROWS; row++) {
     for (var column = 0; column < COLUMNS; column++) {
         if(gameObjects[row][column] === SHIP) {
             shipRow = row;
             shipColumn = column;
+        }
+        if(gameObjects[row][column] === MONSTER) {
+            monsterRow = row;
+            monsterColumn = column;
         }
     }
 }
@@ -105,17 +116,61 @@ function keydownHandler(event) {
             gameMessage = "You sail the open seas."
             break;
         case ISLAND:
-            //trade();
+            trade();
             break;
         case PIRATE:
-            //fight();
+            fight();
             break;
         case HOME:
             //endGame();
             break;
     }
-
+    moveMonster();
     render();
+}
+
+function moveMonster() {
+    var UP = 1; var DOWN =2; var LEFT =3; var RIGHT =4;
+    var disponibleMoves = []
+    if (map[monsterRow +1][monsterColumn] === WATER){
+        disponibleMoves.push(DOWN);
+    }
+    if (map[monsterRow -1][monsterColumn] === WATER){
+        disponibleMoves.push(UP);
+    }
+    if (map[monsterRow][monsterColumn +1] === WATER){
+        disponibleMoves.push(RIGHT);
+    }
+    if (map[monsterRow][monsterColumn -1] === WATER){
+        disponibleMoves.push(LEFT);
+    }
+    console.log(disponibleMoves);
+
+    //
+    var direction = Math.floor(Math.random() * 4) + 1;
+
+    switch(direction) {
+        case UP:
+            gameObjects[monsterRow][monsterColumn] = 0;
+            monsterRow--;
+            gameObjects[monsterRow][monsterColumn] = 5;
+            break;
+        case DOWN:
+            gameObjects[monsterRow][monsterColumn] = 0;
+            monsterRow++;
+            gameObjects[monsterRow][monsterColumn] = 5;
+            break;
+        case LEFT:
+            gameObjects[monsterRow][monsterColumn] = 0;
+            monsterColumn--;
+            gameObjects[monsterRow][monsterColumn] = 5;
+            break;
+        case RIGHT:
+            gameObjects[monsterRow][monsterColumn] = 0;
+            monsterColumn++;
+            gameObjects[monsterRow][monsterColumn] = 5;
+            break;
+    }
 }
 function moveRight() {
     if (shipColumn < COLUMNS - 1) {
@@ -143,6 +198,48 @@ function moveUp() {
         gameObjects[shipRow][shipColumn] = 0;
         shipRow--;
         gameObjects[shipRow][shipColumn] = 4;
+    }
+}
+
+function trade(){
+    var islandFood = experience + gold;
+    var cost = Math.ceil(Math.random() * islandFood);
+
+    if(gold > cost){
+        food += islandFood;
+        gold -= cost;
+        experience += 2;
+        gameMessage = "You buy " + islandFood + " coconuts"
+                    + " for " + cost + " gold pieces.";
+    }
+    else{
+        experience++;
+        gameMessage = "You don't have enough gold to buy food."
+    }
+}
+
+function fight(){
+    var shipStrength = Math.ceil((food + gold) / 2);
+    var pirateStrength = Math.ceil(Math.random() * shipStrength * 2);
+
+    if (pirateStrength > shipStrength) {
+        var stolenGold = Math.round(pirateStrength / 2);
+        gold -= stolenGold;
+
+        experience++;
+
+        gameMessage = "You fight and LOSE " + stolenGold + " gold pieces "
+                    + " Ship's strength: " + shipStrength
+                    + " Pirate's strength: " + pirateStrength;
+    }
+    else{
+        var pirateGold = Math.round(pirateStrength / 2);
+        gold += pirateGold;
+        experience += 2;
+
+        gameMessage = "You fight and WIN " + pirateGold + " gold pieces "
+            + " Ship's strength: " + shipStrength
+            + " Pirate's strength: " + pirateStrength;
     }
 }
 function render(){
@@ -182,12 +279,20 @@ function render(){
                 case SHIP:
                     cell.src = "images/ship.png";
                     break;
+                case MONSTER:
+                    cell.src = "images/monster.png";
+                    break;
             }
             //Position the cell
             cell.style.top = row * SIZE + "px";
             cell.style.left = column * SIZE + "px";
         }
     }
-}
+    //Display the game message
+    output.innerHTML = gameMessage;
 
+    //Display the player's food, gold, and experience
+    output.innerHTML += "<br>Gold: " + gold + ", Food: " + food
+                      + ", Experience: " + experience;
+}
 </script>
