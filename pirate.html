@@ -122,34 +122,46 @@ function keydownHandler(event) {
             fight();
             break;
         case HOME:
-            //endGame();
+            endGame("home");
             break;
     }
     moveMonster();
+    food--;
+    if (food === 0) endGame("food");
+    if (gold < 0) endGame("gold");
+    if (shipRow === monsterRow && shipColumn === monsterColumn)
+        endGame("monster");
     render();
 }
 
 function moveMonster() {
     var UP = 1; var DOWN =2; var LEFT =3; var RIGHT =4;
     var disponibleMoves = []
-    if (map[monsterRow +1][monsterColumn] === WATER){
+    if (monsterRow -1 > -1)
+        var monsterUP = map[monsterRow -1][monsterColumn];
+    if (monsterRow < ROWS - 1)
+        var monsterDOWN = map[monsterRow +1][monsterColumn];
+    if (monsterColumn -1 >= 0)
+        var monsterLEFT = map[monsterRow][monsterColumn -1];
+    if (monsterColumn < COLUMNS - 1)
+        var monsterRIGHT = map[monsterRow][monsterColumn +1];
+
+    if (monsterDOWN === WATER){
         disponibleMoves.push(DOWN);
     }
-    if (map[monsterRow -1][monsterColumn] === WATER){
+    if (monsterUP === WATER){
         disponibleMoves.push(UP);
     }
-    if (map[monsterRow][monsterColumn +1] === WATER){
+    if (monsterRIGHT === WATER){
         disponibleMoves.push(RIGHT);
     }
-    if (map[monsterRow][monsterColumn -1] === WATER){
+    if (monsterLEFT === WATER){
         disponibleMoves.push(LEFT);
     }
-    console.log(disponibleMoves);
-
-    //
-    var direction = Math.floor(Math.random() * 4) + 1;
-
-    switch(direction) {
+    //modificar aquesta linia per adaptar-la la la llargada del array disponibleMoves
+    var direction = Math.floor(Math.random() * disponibleMoves.length);
+    console.log(direction);
+    switch(disponibleMoves[direction]) {
         case UP:
             gameObjects[monsterRow][monsterColumn] = 0;
             monsterRow--;
@@ -241,6 +253,24 @@ function fight(){
             + " Ship's strength: " + shipStrength
             + " Pirate's strength: " + pirateStrength;
     }
+}
+function endGame(reason){
+    var score = food + gold + experience;
+    switch(reason) {
+        case "monster":
+            gameMessage = "Your ship has been swallowed by a sea monster!"
+            break;
+        case "food":
+            gameMessage = "You run out of food! Your crew throws you overboard!"
+            break;
+        case "gold":
+            gameMessage = "You run out of gold! Your crew throws you overboard!"
+            break;
+        case "home":
+            gameMessage = "You made it home ALIVE! " + "Final Score: " + score;
+            break;
+    }
+        window.removeEventListener("keydown", keydownHandler, false);
 }
 function render(){
     //Clear the stage of img tag cells from the previous turn
