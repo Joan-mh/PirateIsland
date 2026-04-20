@@ -1,4 +1,4 @@
-# forestOfLyrica
+# PirateIsland
 
 Per la seva banda els alumnes heu de fer un clone i un pull :
 
